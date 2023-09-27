@@ -4,9 +4,11 @@ import {
   WebSocketServer,
 } from '@nestjs/websockets';
 import { Server } from 'socket.io';
+import { BotService } from './bot.service';
 
 @WebSocketGateway()
 export class AppGateway {
+  constructor(private readonly botService: BotService) {}
   @WebSocketServer()
   server: Server;
 
@@ -20,18 +22,18 @@ export class AppGateway {
   }
 
   @SubscribeMessage('user_message')
-  async handleMessage(client: any, payload: any): Promise<void> {
-    const answer = await this.findAnswer(payload);
+  async handleMessage(client: any, payload: string): Promise<void> {
+    const payloadWordCount = payload.split(' ').length;
+
+    if (payloadWordCount > 20) {
+      return this.respond('Your prompt is too long, please use max 20 words');
+    }
+    const answer = await this.botService.askBot(payload);
     this.respond(answer);
   }
 
   async respond(answer: string) {
     console.log('responding with', { msg: answer });
     this.server.emit('bot_message', { msg: answer });
-  }
-
-  private async findAnswer(prompt: string): Promise<string> {
-    // return `Did you mean: "${this.msg}"?`;
-    return 'OK';
   }
 }

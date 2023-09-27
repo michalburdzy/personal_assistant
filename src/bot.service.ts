@@ -13,7 +13,7 @@ export class BotService implements OnModuleInit {
         model: 'gpt-3.5-turbo',
         temperature: 0.5,
         top_p: 0.8,
-        max_tokens: 24,
+        max_tokens: 40,
       },
     });
   }
@@ -24,8 +24,11 @@ export class BotService implements OnModuleInit {
 
   public async askBot(prompt: string): Promise<string> {
     try {
-      console.log(this.parentMessageId);
-      const response = await this.api.sendMessage(prompt, {
+      const query = this.parentMessageId
+        ? prompt
+        : `Limit all your answers to 40 words. Prompt: "${prompt}"`;
+
+      const response = await this.api.sendMessage(query, {
         ...(this.parentMessageId && {
           parentMessageId: this.parentMessageId,
         }),

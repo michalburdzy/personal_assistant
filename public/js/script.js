@@ -65,7 +65,7 @@ class Bot {
 
     this.addEventListeners();
     this.addSocketListeners();
-    this.speak('Hi!');
+    this.speak(messages.hello[this.lang]);
   }
 
   async wait(ms = 1000) {
@@ -103,6 +103,7 @@ class Bot {
       if (link) {
         window.open(link, '_blank');
       }
+      this.start();
     });
   }
 
@@ -119,7 +120,14 @@ class Bot {
       this.waitForNextWord();
 
       if (e.results[last].isFinal === true) {
-        this.sendQueryToBe();
+        if (
+          this.query.toLowerCase().includes('exit') ||
+          this.query.toLowerCase().includes('quit')
+        ) {
+          console.log('exiting');
+        } else {
+          this.sendQueryToBe();
+        }
       }
     };
 
@@ -167,7 +175,6 @@ class Bot {
   }
 
   start() {
-    this.speak(messages.hello[this.lang]);
     this.recognition.start();
     this.htmlElements.output.textContent = messages.listening[this.lang];
     this.htmlElements.loading.classList.add('reveal');

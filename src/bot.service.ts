@@ -3,6 +3,7 @@ import { Injectable, OnModuleInit } from '@nestjs/common';
 @Injectable()
 export class BotService implements OnModuleInit {
   private api: any;
+  parentMessageId: string | undefined;
 
   async onModuleInit() {
     const chatgpt = await import('chatgpt');
@@ -17,9 +18,19 @@ export class BotService implements OnModuleInit {
     });
   }
 
-  public async askBot(propmt: string): Promise<string> {
+  onConversationEnd() {
+    this.parentMessageId = undefined;
+  }
+
+  public async askBot(prompt: string): Promise<string> {
     try {
-      const response = await this.api.sendMessage(propmt);
+      console.log(this.parentMessageId);
+      const response = await this.api.sendMessage(prompt, {
+        ...(this.parentMessageId && {
+          parentMessageId: this.parentMessageId,
+        }),
+      });
+      this.parentMessageId = response.id;
       return response.text;
     } catch (error) {
       return `Error: ${error.statusText || error.toString().substr(0, 40)}`;
